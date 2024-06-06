@@ -1,0 +1,7 @@
+{
+    "host_port": 7000,
+    "sight_day_preview_count": 2,
+    "database_filepath": "/path/to/database.db",
+    "serve_frontend": true,
+    "frontend_root": "/path/to/your/webroot/"
+}

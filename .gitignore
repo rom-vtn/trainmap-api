@@ -1,0 +1,5 @@
+#No custom config
+api_config.json
+
+# No executables
+/trainmap_api*
