@@ -58,6 +58,10 @@ func main() {
 	http.Handle("GET /api/sights/{lat}/{lon}/", gzipHandler(sightsHandler))
 	http.Handle("GET /api/sights/{lat}/{lon}/{date}/", gzipHandler(sightsHandler))
 
+	//moving sights api
+	http.Handle("GET /api/aboard/{feedId}/{tripId}/", gzipHandler(aboardHandler))
+	http.Handle("GET /api/aboard/{feedId}/{tripId}/{date}", gzipHandler(aboardHandler))
+
 	// add DB query entries
 	http.Handle("GET /api/data/{dataType}/{firstKey}/{secondKey}/", gzipHandler(databaseHandler))
 	http.Handle("GET /api/data/{dataType}/{firstKey}/", gzipHandler(databaseHandler))
@@ -93,6 +97,60 @@ type APISightsResponse struct {
 	FirstDate    time.Time                   `json:"first_date"`
 	LastDate     time.Time                   `json:"last_date"`
 	PassingTimes []trainmapdb.RealTrainSight `json:"passing_times"`
+}
+
+type APIMovingSightsResponse struct {
+	Success bool                              `json:"success"`
+	Error   string                            `json:"error"`
+	Trip    trainmapdb.Trip                   `json:"trip"`
+	Date    time.Time                         `json:"date"`
+	Sights  []trainmapdb.RealMovingTrainSight `json:"sights"`
+}
+
+func aboardHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//parse URL
+	feedId := r.PathValue("feedId")
+	tripId := r.PathValue("tripId")
+	dateString := r.PathValue("date")
+	var date time.Time
+	var err error
+	if dateString == "" {
+		date = time.Now()
+	} else {
+		date, err = time.Parse("2006-01-02", dateString)
+		if err != nil {
+			sendError(w, err)
+			return
+		}
+	}
+
+	//respond
+	trip, err := serverFetcher.GetTrip(feedId, tripId)
+	if err != nil {
+		sendError(w, err)
+		return
+	}
+	realMovingTrainSights, err := serverFetcher.GetSightsFromTrip(trip, trainmapdb.NewDate(date))
+	if err != nil {
+		sendError(w, err)
+		return
+	}
+	response := APIMovingSightsResponse{
+		Success: true,
+		Error:   "",
+		Trip:    trip,
+		Date:    date,
+		Sights:  realMovingTrainSights,
+	}
+
+	raw, err := json.Marshal(response)
+	if err != nil {
+		sendError(w, err)
+		return
+	}
+	w.Write(raw)
 }
 
 func sightsHandler(w http.ResponseWriter, r *http.Request) {
