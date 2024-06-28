@@ -141,7 +141,7 @@ func aboardHandler(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Error:   "",
 		Trip:    trip,
-		Date:    date,
+		Date:    date.Truncate(24 * time.Hour),
 		Sights:  realMovingTrainSights,
 	}
 
