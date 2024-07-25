@@ -3,3 +3,6 @@ api_config.json
 
 # No executables
 /trainmap_api*
+
+# no experimental temp files
+my-graph.gv
