@@ -61,6 +61,7 @@ func main() {
 	//moving sights api
 	http.Handle("GET /api/aboard/{feedId}/{tripId}/", gzipHandler(aboardHandler))
 	http.Handle("GET /api/aboard/{feedId}/{tripId}/{date}", gzipHandler(aboardHandler))
+	http.Handle("GET /api/aboard/{feedId}/{tripId}/{date}/{lateSeconds}", gzipHandler(aboardHandler))
 
 	// add DB query entries
 	http.Handle("GET /api/data/{dataType}/{firstKey}/{secondKey}/", gzipHandler(databaseHandler))
@@ -114,8 +115,17 @@ func aboardHandler(w http.ResponseWriter, r *http.Request) {
 	feedId := r.PathValue("feedId")
 	tripId := r.PathValue("tripId")
 	dateString := r.PathValue("date")
+	lateSecondsString := r.PathValue("lateSeconds")
+	if lateSecondsString == "" {
+		lateSecondsString = "0"
+	}
+	lateSecondsInt, err := strconv.ParseInt(lateSecondsString, 10, 64)
+	if err != nil {
+		sendError(w, err)
+		return
+	}
 	var date time.Time
-	var err error
+	lateTime := time.Duration(lateSecondsInt) * time.Second
 	if dateString == "" {
 		date = time.Now()
 	} else {
@@ -132,7 +142,7 @@ func aboardHandler(w http.ResponseWriter, r *http.Request) {
 		sendError(w, err)
 		return
 	}
-	realMovingTrainSights, err := serverFetcher.GetSightsFromTrip(trip, trainmapdb.NewDate(date))
+	realMovingTrainSights, err := serverFetcher.GetSightsFromTrip(trip, trainmapdb.NewDate(date), lateTime)
 	if err != nil {
 		sendError(w, err)
 		return
