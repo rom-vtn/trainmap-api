@@ -13,6 +13,7 @@ import (
 	trainmapdb "github.com/rom-vtn/trainmap-db"
 )
 
+// a ServerConfig represents the config needed to run a server
 type ServerConfig struct {
 	HostPort             uint16 `json:"host_port"`
 	FrontendWebroot      string `json:"frontend_root"`
@@ -91,6 +92,7 @@ func sendError(w http.ResponseWriter, err error) {
 	w.Write(response)
 }
 
+// API response in case of (static) sights
 type APISightsResponse struct {
 	Success      bool                        `json:"success"`
 	Error        string                      `json:"error"`
@@ -100,6 +102,7 @@ type APISightsResponse struct {
 	PassingTimes []trainmapdb.RealTrainSight `json:"passing_times"`
 }
 
+// API response for sights aboard a train
 type APIMovingSightsResponse struct {
 	Success bool                              `json:"success"`
 	Error   string                            `json:"error"`
@@ -108,6 +111,7 @@ type APIMovingSightsResponse struct {
 	Sights  []trainmapdb.RealMovingTrainSight `json:"sights"`
 }
 
+// handle API requests for sights aboard trains
 func aboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -163,6 +167,7 @@ func aboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(raw)
 }
 
+// handle API requests for sights at a given point
 func sightsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	lat, err := strconv.ParseFloat(r.PathValue("lat"), 64)
@@ -216,6 +221,7 @@ func sightsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(raw)
 }
 
+// handle API queries for a specific item in the DB
 func databaseHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	fetcher := serverFetcher
@@ -262,6 +268,7 @@ func databaseHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(raw)
 }
 
+// Reponse for API DB queries
 type APIDatabaseResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error"`
