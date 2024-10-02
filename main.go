@@ -146,7 +146,7 @@ func aboardHandler(w http.ResponseWriter, r *http.Request) {
 		sendError(w, err)
 		return
 	}
-	realMovingTrainSights, err := serverFetcher.GetSightsFromTrip(trip, trainmapdb.NewDate(date), lateTime)
+	realMovingTrainSights, newTrip, err := serverFetcher.GetSightsFromTrip(trip, trainmapdb.NewDate(date), lateTime)
 	if err != nil {
 		sendError(w, err)
 		return
@@ -154,7 +154,7 @@ func aboardHandler(w http.ResponseWriter, r *http.Request) {
 	response := APIMovingSightsResponse{
 		Success: true,
 		Error:   "",
-		Trip:    trip,
+		Trip:    newTrip,
 		Date:    date.Truncate(24 * time.Hour),
 		Sights:  realMovingTrainSights,
 	}
