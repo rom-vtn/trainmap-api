@@ -11,6 +11,7 @@ import (
 
 	gziphandler "github.com/NYTimes/gziphandler"
 	trainmapdb "github.com/rom-vtn/trainmap-db"
+	"gorm.io/driver/sqlite"
 )
 
 // a ServerConfig represents the config needed to run a server
@@ -44,7 +45,10 @@ func main() {
 	}
 
 	//init fetcher
-	fetcher, err := trainmapdb.NewFetcher(serverConfig.DatabaseFilepath, nil)
+	dial, useMutex := sqlite.Open(serverConfig.DatabaseFilepath), true
+	// dsn := "host=localhost user=postgres password=password dbname=postgres port=5432 TimeZone=Europe/Paris"
+	// dial, useMutex := postgres.Open(dsn), false
+	fetcher, err := trainmapdb.NewFetcher(dial, useMutex, nil)
 	if err != nil {
 		log.Fatalf("could not open database, exiting: %s", err.Error())
 	}
