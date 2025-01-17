@@ -73,6 +73,8 @@ func main() {
 	http.Handle("GET /api/data/{dataType}/{firstKey}/", gzipHandler(databaseHandler))
 	http.Handle("GET /api/data/{dataType}/", gzipHandler(databaseHandler))
 
+	http.Handle("GET /api/stop-completions/{name}", gzipHandler(stopCompletionsHandler))
+
 	listenString := ":" + fmt.Sprint(serverConfig.HostPort)
 	println("Listening on ", listenString)
 	log.Fatal(http.ListenAndServe(listenString, nil))
@@ -113,6 +115,27 @@ type APIMovingSightsResponse struct {
 	Trip    trainmapdb.Trip                   `json:"trip"`
 	Date    time.Time                         `json:"date"`
 	Sights  []trainmapdb.RealMovingTrainSight `json:"sights"`
+}
+
+func stopCompletionsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	name := r.PathValue("name")
+	stops, err := serverFetcher.GetStopsLike(name)
+	if err != nil {
+		sendError(w, err)
+		return
+	}
+	response := APIDatabaseResponse{
+		Success: true,
+		Content: stops,
+	}
+
+	raw, err := json.Marshal(response)
+	if err != nil {
+		sendError(w, err)
+		return
+	}
+	w.Write(raw)
 }
 
 // handle API requests for sights aboard trains
